@@ -1,4 +1,4 @@
-from django.views.generic.edit import FormView
+from django.views.generic import FormView, ListView, DeleteView, DetailView
 import requests
 import certifi
 from .forms import EnderecoForm
@@ -30,3 +30,15 @@ class ViaCepFormView(FormView):
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
+
+class ViaCepListView(ListView):
+    model = Endereco
+    paginate_by = 10
+    template_name = 'listagem.html'
+    context_object_name = 'enderecos'
+
+class ViaCepDeleteView(DeleteView):
+    pass
+
+class ViaCepDetailView(DetailView):
+    pass
