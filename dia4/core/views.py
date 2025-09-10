@@ -1,29 +1,32 @@
-from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic.edit import FormView
+import requests
+import certifi
 from .forms import EnderecoForm
 from .models import Endereco
-import requests, certifi
 
-class Home(TemplateView):
-    template_name = 'home.html'
+class ViaCepFormView(FormView):
+    template_name = 'endereco.html'
+    form_class = EnderecoForm
+    success_url = '.'  # redireciona para a mesma página
 
-def consulta_cep(request):
-    form = EnderecoForm(request.GET or None)
-
-    if form.is_valid():
+    def form_valid(self, form):
         cep = form.cleaned_data['cep']
         response = requests.get(f"https://viacep.com.br/ws/{cep}/json", verify=certifi.where())
 
         if response.status_code == 200:
             data = response.json()
             endereco = Endereco(
-                cep = data.get('cep'),
-                rua = data.get('logradouro'),
-                bairro = data.get('bairro'),
-                cidade = data.get('localidade'),
-                estado = data.get('uf')
+                cep=data.get('cep'),
+                rua=data.get('logradouro'),
+                bairro=data.get('bairro'),
+                cidade=data.get('localidade'),
+                estado=data.get('uf')
             )
-
             endereco.save()
-            return render(request, 'endereco.html', {'endereco': endereco}) # Pegou o CEP com sucesso
-    return render(request, 'endereco.html', {'endereco': 'CEP não existente na base de dados'}) # Se não conseguir pegar o CEP
+            return self.render_to_response(self.get_context_data(form=form, endereco=endereco))
+        else:
+            msg = 'CEP não existente na base de dados'
+            return self.render_to_response(self.get_context_data(form=form, endereco=msg))
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
