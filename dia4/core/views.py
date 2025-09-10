@@ -1,4 +1,5 @@
 from django.views.generic import FormView, ListView, DeleteView, DetailView
+from django.urls import reverse_lazy
 import requests
 import certifi
 from .forms import EnderecoForm
@@ -38,7 +39,10 @@ class ViaCepListView(ListView):
     context_object_name = 'enderecos'
 
 class ViaCepDeleteView(DeleteView):
-    pass
+    template_name = 'deletar.html'
+    model = Endereco
+    success_url = reverse_lazy("listagem")
 
 class ViaCepDetailView(DetailView):
-    pass
+    model = Endereco
+    template_name = 'detalhar.html'
